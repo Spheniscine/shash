@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Spheniscine"]
 license = "MIT OR Apache-2.0"
+homepage = "https://github.com/Spheniscine/shash"
 description = "An arbitrary-length-input hash function for competitive programming and experimental purposes."
+repository = "https://github.com/Spheniscine/shash"
 readme = "README.md"
+keywords = ["hash", "hasher", "hashmap", "competitive-programming"]
+categories = ["algorithms", "data-structures"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
