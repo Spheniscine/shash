@@ -78,4 +78,4 @@ Note that in the case of single-word keys, the RNG stepping is actually optimize
 
 If we knew the seed, we could craft input that combines with the pseudorandom string from the dither such that it will zero out the bits in the state and keep it at zero to generate many collisions. However, if the seed is different, the dither will likely generate a completely different pseudorandom string, thus our collisions will not work on this different seed.
 
-Note that this function is quite trivially insecure in cases where the output is exposed. This is because all the NASAM operations can be inverted, exposing the seed-derived differentials sufficiently that they can be solved for.
+Note that this function is quite trivially insecure in cases where the output is exposed. This is because all the NASAM operations can be inverted, exposing the seed-derived differentials sufficiently that they can be solved for. This is not a factor in competitive programming, as hash values aren't typically exposed. Even if it was, a "hacker" cannot typically change their input based on the knowledge of the hash values or seed from a particular run.
