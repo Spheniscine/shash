@@ -26,7 +26,7 @@ So, if the security requirements are meaningfully lower, could we perhaps develo
 
 ## Design
 
-Is the MurmurHash break meaningful then, in the light of these lowered security requirements? To try to answer this question, we should examine exactly what the [break](http://emboss.github.io/blog/2012/12/14/breaking-murmur-hash-flooding-dos-reloaded/) is and claims to be. With some thought, a flaw becomes apparent that's almost trivial in hindsight. It is illustrated by this section of the MurmurHash code:
+Is the MurmurHash break meaningful then, in the light of these lowered security requirements? To try to answer this question, we should examine exactly what the [break](http://emboss.github.io/blog/2012/12/14/breaking-murmur-hash-flooding-dos-reloaded/) is and claims to be. With some thought, the flaw in MurmurHash becomes apparent that's almost trivial in hindsight. It is illustrated by this section of the MurmurHash code:
 
 ```
 uint64_t k = *(uint64_t*)data;
