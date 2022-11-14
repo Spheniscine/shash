@@ -64,7 +64,7 @@ impl SHash {
 
 The SHash struct consists of two variables. The first variable (`self.0`) is the 64-bit **state**. The second variable (`self.1`) is a 128-bit **dither**.
 
-The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG. Additionally it is never affected by the input
+The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG. Additionally, it is never affected by the input.
 
 The first line adds the high-half of the dither (the output of the RNG) to the input bits. By combining this psuedorandom string with the input *before* any transformations are applied, we avoid the seed-independent collision flaw in MurmurHash, or at least hopefully make them much harder to find.
 
