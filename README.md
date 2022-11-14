@@ -39,3 +39,37 @@ k *= m;
 The issue here is that we are taking raw bits from the input, and applying transforms to it that do not depend on the seed. Thus, an adversary can just apply the inverse of this transform to their input to preserve the collision-causing differentials. In other words, these are *wasted cycles* from an adversarial point of view.
 
 Thus, there is a reasonably efficient "off the shelf" algorithm for generating many seed-independent collisions for MurmurHash. I am currently unaware if this algorithm can be used to meaningfully "hack" another participant's solution - there are several other practical barriers in the way, namely that most problems impose strict constraints on the input, thus generated input that is, for example, too long or not ASCII-compliant might not be accepted as a test-case. However this is worrisome enough, in my opinion, to consider using another algorithm.
+
+Another flaw concerns speed more than security. For each "word" (64 bits) of input, MurmurHash takes three multiplies and some xorshifts to combine it with its current state. After that, it applies two more rounds of multiply + xorshift before outputting. The additional two rounds is called "finalization". The effect is that the graph of input size to speed has a significant "y-intercept", a constant added to the time regardless of the size of an input. Unfortunately, most problems in programming competitions only require using single 32-bit or 64-bit integers as keys, so finalization takes a significant portion of the time needed to hash. Note that SipHash shares this "flaw", which is apparent in the naming of the variant used in Rust, SipHash-1-3. It means "1 round for compression, 3 rounds for finalization". This means that the typical single-word input from a competitive programming problem would have four to five SipHash rounds applied to it (the additional round because of length padding). 
+
+These finalizers are applied in order to improve diffusion and the "avalanche property" in the final output, so that distribution between hash buckets more closely approximates theoretical randomness. Most arbitrary-length hash functions published use some form of finalizer. However, due to the high frequency of single-word inputs in our use-case, when designing a hash function for it, we should ideally choose a fast compression function that already comes with good diffusion and having either a trivial or no finalizer, thus, when a hashmap with keys that consist only of single words (like machine integers) is compiled, we just get that compression function inlined in the assembly code.
+
+With this is mind we can examine the design of the heart of the SHash implementation in this repository, [the code in `SHash::write_u64`](https://docs.rs/shash/0.1.0/src/shash/lib.rs.html#77-86):
+
+```rust
+pub struct SHash(u64, u128);
+impl SHash {
+    #[inline] fn write_u64(&mut self, i: u64) {
+        let mut z = i.wrapping_add((self.1 >> 64) as u64);
+        z ^= z.rotate_right(25) ^ z.rotate_right(47);
+        z = z.wrapping_mul(0x9E6C63D0676A9A99).wrapping_add(self.0);
+        z ^= z >> 23 ^ z >> 51;
+        z = z.wrapping_mul(0x9E6D62D06F6A9A9B);
+        z ^= z >> 23 ^ z >> 51;
+        self.0 = z;
+        self.1 = self.1.wrapping_mul(0xda942042e4dd58b5);
+    }
+}
+```
+
+The SHash struct consists of two variables. The first variable (`self.0`) is the 64-bit **state**. The second variable (`self.1`) is a 128-bit **dither**.
+
+The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG.
+
+The first line adds the high-half of the dither to the input bits. By combining this psuedorandom string with the input *before* any transformations are applied, we avoid the invertability flaw in MurmurHash.
+
+The rest of the transformations on `z` is a compression function based on [NASAM](http://mostlymangling.blogspot.com/2020/01/nasam-not-another-strange-acronym-mixer.html). Basically, input + dither goes through some bitmixing before being added to the state (which had been initialized randomly too), which then undergoes more mixing. As NASAM has better statistical randomness properties (as described by the test procedure on the NASAM homepage) than either MurmurHash3's finalizer or Splitmix/Variant13, this eliminates the need for separate compression and finalization steps, solving the second problem.
+
+Note that in the case of single-word keys, the RNG stepping is actually optimized out. So the compiled hashing code reduces to a single round of NASAM with two additions of randomized seed values.
+
+[This submission](https://codeforces.com/contest/1654/submission/153455964) is for the same problem as the [previous example](https://codeforces.com/contest/1654/submission/153433867). Using SHash instead of the default SipHash-1-3 allowed this problem to be solved in two seconds instead of four seconds of runtime.
