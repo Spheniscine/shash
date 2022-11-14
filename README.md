@@ -66,7 +66,7 @@ The SHash struct consists of two variables. The first variable (`self.0`) is the
 
 The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG. Additionally it is never affected by the input
 
-The first line adds the high-half of the dither (the output of the RNG) to the input bits. By combining this psuedorandom string with the input *before* any transformations are applied, we avoid the invertability flaw in MurmurHash.
+The first line adds the high-half of the dither (the output of the RNG) to the input bits. By combining this psuedorandom string with the input *before* any transformations are applied, we avoid the seed-independent collision flaw in MurmurHash, or at least hopefully make them much harder to find.
 
 The rest of the transformations on `z` is a compression function based on [NASAM](http://mostlymangling.blogspot.com/2020/01/nasam-not-another-strange-acronym-mixer.html). Basically, input + dither goes through some bitmixing before being added to the state (which had been initialized randomly too), which then undergoes more mixing. As NASAM has better statistical randomness properties (as described by the test procedure on the NASAM homepage) than either MurmurHash3's finalizer or Splitmix/Variant13, this eliminates the need for separate compression and finalization steps, solving the second problem.
 
