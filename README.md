@@ -64,7 +64,7 @@ impl SHash {
 
 The SHash struct consists of two variables. The first variable (`self.0`) is the 64-bit **state**. The second variable (`self.1`) is a 128-bit **dither**.
 
-The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG.
+The purpose of the dither is actually apparent from the *last* line of this code - this is actually a [Lehmer64](https://lemire.me/blog/2019/03/19/the-fastest-conventional-random-number-generator-that-can-pass-big-crush/) RNG. Additionally it is never affected by the input
 
 The first line adds the high-half of the dither (the output of the RNG) to the input bits. By combining this psuedorandom string with the input *before* any transformations are applied, we avoid the invertability flaw in MurmurHash.
 
@@ -73,3 +73,9 @@ The rest of the transformations on `z` is a compression function based on [NASAM
 Note that in the case of single-word keys, the RNG stepping is actually optimized out. So the compiled hashing code reduces to a single round of NASAM with two additions of randomized seed values.
 
 [This submission](https://codeforces.com/contest/1654/submission/153455964) is for the same problem as the [previous example](https://codeforces.com/contest/1654/submission/153433867). Using SHash instead of the default SipHash-1-3 allowed this problem to be solved in two seconds instead of four seconds of runtime.
+
+## Security and preliminary cryptanalysis
+
+If we knew the seed, we could craft input that combines with the pseudorandom string from the dither such that it will zero out the bits in the state and keep it at zero to generate many collisions. However, if the seed is different, the dither will likely generate a completely different pseudorandom string, thus our collisions will not work on this different seed.
+
+Note that this function is quite trivially insecure in cases where the output is exposed. This is because all the NASAM operations can be inverted, exposing the seed-derived differentials sufficiently that they can be solved for.
