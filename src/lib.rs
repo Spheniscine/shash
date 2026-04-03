@@ -1,4 +1,11 @@
-use std::{collections::{hash_map::RandomState, HashMap, HashSet}, time::Instant, cell::Cell, hash::{BuildHasher, Hash, Hasher}};
+use std::{collections::{hash_map::RandomState, HashMap, HashSet}, cell::Cell, hash::{BuildHasher, Hash, Hasher}};
+
+// uses the crate "web_time" to implement Instant for the wasm compilation target
+#[cfg(not(feature = "wasm"))]
+use std::time::Instant;
+#[cfg(feature = "wasm")]
+use web_time::Instant;
+
 
 // easy way to "steal" entropy from the standard library. Fairly slow, so we merely use it to initialize a small thread-local RNG to seed our hashers with
 fn generate_seed() -> u64 {
