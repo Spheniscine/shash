@@ -6,7 +6,7 @@ SHash is a hash function that is optimized for the use-cases of competitive prog
 
 ## Rationale
 
-Existing hash functions basically generally fall into two categories, non-cryptographic that prioritizes speed over security (FNV, FxHash), and generally are "fixed" hash functions that do not admit a "seed" to select a random hash function from a family, and cryptographic that prioritizes security over speed (SHA256, BLAKE3).
+Existing hash functions basically generally fall into two categories: non-cryptographic that prioritizes speed over security (FNV, FxHash), and generally are "fixed" hash functions that do not admit a "seed" to select a random hash function from a family, and cryptographic that prioritizes security over speed (SHA256, BLAKE3).
 
 Most of the latter tend to be slow enough to make general use in "subroutine" algorithms that aren't related to security or cryptography problematic. There have been several attempts to "bridge" this gap by equipping a non-cryptographic function with a seed, e.g. MurmurHash, however it is quite famously [broken](http://emboss.github.io/blog/2012/12/14/breaking-murmur-hash-flooding-dos-reloaded/), in the sense that there is a way to construct input that collides no matter what seed is chosen.
 
